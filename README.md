@@ -83,9 +83,9 @@ python src/evaluate.py
 ## Model Performance
 
 - **Architecture**: MobileNetV2 (Transfer Learning)
-- **Training Accuracy**: 92%
-- **Validation Accuracy**: 89%
-- **Test Accuracy**: 87%
+- **Training Accuracy**: 88%
+- **Validation Accuracy**: 85%
+- **Test Accuracy**: 83%
 - **Inference Time**: <100ms per image
 
 ## Project Structure
@@ -125,10 +125,10 @@ This project is licensed under the MIT License.
 
 ## Acknowledgments
 
-- Dataset: TrashNet / Kaggle Waste Classification
+- Dataset: RealWaste Image Classification / Kaggle Waste Classification
 - Base Model: MobileNetV2 (ImageNet pre-trained)
 - Framework: TensorFlow/Keras
 
 ## Contact
-Isha Kake - ishakale07@gmail.com
-Project Link: https://github.com/yourusername/waste-classifier
+Isha Kale - ishakale07@gmail.com
+Project Link: https://github.com/ishakale07/AI-Waste-Classification-System
