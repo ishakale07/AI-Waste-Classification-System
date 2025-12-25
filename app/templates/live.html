@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Camera - AI Waste Classifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #b6ccfe 0%, #abc4ff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-links {
+            margin: 20px 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            margin: 0 5px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .camera-container {
+            position: relative;
+        }
+
+        #video {
+            width: 100%;
+            border-radius: 15px;
+            background: #000;
+            display: block;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #a3f998, #84eaa4);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.active {
+            background: #2ecc71;
+        }
+
+        .status-indicator.inactive {
+            background: #95a5a6;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .result-panel {
+            min-height: 400px;
+        }
+
+        .result-panel h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .no-prediction {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .no-prediction-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .prediction-display {
+            display: none;
+        }
+
+        .prediction-display.active {
+            display: block;
+        }
+
+        .predicted-category {
+            text-align: center;
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .confidence-bar {
+            margin: 20px 0;
+        }
+
+        .confidence-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .bar-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 25px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .disposal-info {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .disposal-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .disposal-info p {
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .settings-panel {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .settings-panel h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .setting-item {
+            margin: 15px 0;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .fps-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #c00;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📹 Live Camera Classification</h1>
+            <p>Real-time waste classification using your camera</p>
+            <div class="nav-links">
+                <a href="/">← Upload Mode</a>
+                <a href="/analytics">Analytics</a>
+            </div>
+        </header>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="main-content">
+            <div class="card camera-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+                <div class="camera-overlay" id="cameraOverlay">
+                    <div>📷</div>
+                    <div>Click "Start Camera" to begin</div>
+                </div>
+                <div class="fps-display" id="fpsDisplay" style="display: none;">
+                    FPS: <span id="fpsValue">0</span>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="startBtn">
+                        <span class="status-indicator inactive" id="statusIndicator"></span>
+                        Start Camera
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" disabled>
+                        Stop Camera
+                    </button>
+                </div>
+
+                <div class="settings-panel">
+                    <h3>⚙️ Settings</h3>
+                    <div class="setting-item">
+                        <label for="confidenceThreshold">
+                            Confidence Threshold: <span id="confidenceValue">50</span>%
+                        </label>
+                        <input type="range" min="0" max="100" value="50" 
+                               class="slider" id="confidenceThreshold">
+                        <small style="color: #777;">Only show predictions above this confidence</small>
+                    </div>
+                    <div class="setting-item">
+                        <label for="predictionInterval">
+                            Prediction Interval: <span id="intervalValue">500</span>ms
+                        </label>
+                        <input type="range" min="100" max="2000" value="500" step="100"
+                               class="slider" id="predictionInterval">
+                        <small style="color: #777;">How often to analyze frames</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card result-panel">
+                <h2>Classification Results</h2>
+                
+                <div class="no-prediction" id="noPrediction">
+                    <div class="no-prediction-icon">🎯</div>
+                    <p>Start the camera and point it at a waste item</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">
+                        Results will appear here in real-time
+                    </p>
+                </div>
+
+                <div class="prediction-display" id="predictionDisplay">
+                    <div style="text-align: center;">
+                        <div class="predicted-category" id="predictedCategory">-</div>
+                        <div class="confidence-badge" id="confidenceBadge">-</div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h3 style="color: #333; margin-bottom: 15px;">Top Predictions</h3>
+                        <div id="topPredictions"></div>
+                    </div>
+
+                    <div class="disposal-info" id="disposalInfo">
+                        <h3>🗑️ Disposal Instructions</h3>
+                        <p><strong>Bin Type:</strong> <span id="binType">-</span></p>
+                        <p style="margin-top: 10px;"><strong>Examples:</strong> <span id="examples">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const cameraOverlay = document.getElementById('cameraOverlay');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const noPrediction = document.getElementById('noPrediction');
+        const predictionDisplay = document.getElementById('predictionDisplay');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+        const fpsValue = document.getElementById('fpsValue');
+
+        let stream = null;
+        let isRunning = false;
+        let predictionInterval = null;
+        let frameCount = 0;
+        let lastFpsUpdate = Date.now();
+        let confidenceThreshold = 0.5;
+        let intervalMs = 500;
+
+        // Settings listeners
+        document.getElementById('confidenceThreshold').addEventListener('input', (e) => {
+            confidenceThreshold = e.target.value / 100;
+            document.getElementById('confidenceValue').textContent = e.target.value;
+        });
+
+        document.getElementById('predictionInterval').addEventListener('input', (e) => {
+            intervalMs = parseInt(e.target.value);
+            document.getElementById('intervalValue').textContent = e.target.value;
+            
+            // Restart prediction loop if running
+            if (isRunning) {
+                clearInterval(predictionInterval);
+                startPredictionLoop();
+            }
+        });
+
+        // Start camera
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'environment' // Use back camera on mobile
+                    } 
+                });
+                
+                video.srcObject = stream;
+                cameraOverlay.style.display = 'none';
+                statusIndicator.classList.remove('inactive');
+                statusIndicator.classList.add('active');
+                startBtn.textContent = ' Camera Active';
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                fpsDisplay.style.display = 'block';
+                isRunning = true;
+
+                // Wait for video to load
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    startPredictionLoop();
+                };
+
+                hideError();
+            } catch (err) {
+                showError('Could not access camera: ' + err.message);
+            }
+        });
+
+        // Stop camera
+        stopBtn.addEventListener('click', () => {
+            stopCamera();
+        });
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            if (predictionInterval) {
+                clearInterval(predictionInterval);
+            }
+            
+            video.srcObject = null;
+            cameraOverlay.style.display = 'block';
+            statusIndicator.classList.remove('active');
+            statusIndicator.classList.add('inactive');
+            startBtn.textContent = ' Start Camera';
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            fpsDisplay.style.display = 'none';
+            isRunning = false;
+            
+            noPrediction.style.display = 'block';
+            predictionDisplay.classList.remove('active');
+        }
+
+        function startPredictionLoop() {
+            predictionInterval = setInterval(async () => {
+                await captureAndPredict();
+                updateFPS();
+            }, intervalMs);
+        }
+
+        async function captureAndPredict() {
+            if (!isRunning || video.readyState !== video.HAVE_ENOUGH_DATA) {
+                return;
+            }
+
+            // Draw video frame to canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert to base64
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+            try {
+                const response = await fetch('/predict_frame', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.confidence >= confidenceThreshold) {
+                    displayPrediction(result);
+                    frameCount++;
+                }
+            } catch (error) {
+                console.error('Prediction error:', error);
+            }
+        }
+
+        function displayPrediction(result) {
+            noPrediction.style.display = 'none';
+            predictionDisplay.classList.add('active');
+
+            document.getElementById('predictedCategory').textContent = 
+                result.predicted_class.toUpperCase();
+            document.getElementById('confidenceBadge').textContent = 
+                result.confidence_percentage + '% Confident';
+
+            // Top predictions
+            const topPredDiv = document.getElementById('topPredictions');
+            topPredDiv.innerHTML = '';
+            
+            result.top_predictions.forEach(pred => {
+                const barDiv = document.createElement('div');
+                barDiv.className = 'confidence-bar';
+                barDiv.innerHTML = `
+                    <div class="confidence-bar-label">
+                        <span>${pred.category}</span>
+                        <span>${pred.percentage}%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${pred.percentage}%">
+                            ${pred.percentage}%
+                        </div>
+                    </div>
+                `;
+                topPredDiv.appendChild(barDiv);
+            });
+
+            // Disposal info
+            const info = result.disposal_info;
+            document.getElementById('binType').textContent = info.bin;
+            document.getElementById('examples').textContent = info.examples;
+        }
+
+        function updateFPS() {
+            const now = Date.now();
+            const elapsed = now - lastFpsUpdate;
+            
+            if (elapsed >= 1000) {
+                const fps = Math.round((frameCount * 1000) / elapsed);
+                fpsValue.textContent = fps;
+                frameCount = 0;
+                lastFpsUpdate = now;
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>

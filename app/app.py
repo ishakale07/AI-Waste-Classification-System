@@ -7,6 +7,7 @@ import io
 import os
 import json
 from datetime import datetime
+import base64
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'app/static/uploads'
@@ -270,6 +271,66 @@ def analytics():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/predict_frame', methods=['POST'])
+def predict_frame():
+    if model is None:
+        return jsonify({
+            'success' : 'False',
+            'error' : 'Model not loaded'
+        }), 500
+    
+    try:
+        data = request.get_json()
+
+        if not data or 'image' not in data:
+            return jsonify({
+                'success' : 'False',
+                'error' : 'No image data provided'
+            }), 400
+        
+        image_data = data['image'].split(',')[1]
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(io.BytesIO(image_bytes))
+
+        processed_image = preprocess_image(image)
+        predictions = model.predict(processed_image, verbose = 0)[0]
+        predicted_class_idx= np.argmax(predictions)
+        predicted_class = class_labels[predicted_class_idx]
+        confidence = float(predictions[predicted_class_idx])
+
+        top_3_predictions = [
+            {
+                'category' : class_labels[i],
+                'confidence' : float(predictions[i]),
+                'percentage' : f"{float(predictions[i])*100:.1f}"
+            }
+            for i in np.argsort(predictions)[-3:][::-1]
+        ]
+
+        disposal_info = get_disposal_info(predicted_class)
+
+        return jsonify({
+            'success' : True,
+            'predicted_class' : predicted_class,
+            'confidence' : confidence,
+            'confidence_percentage' : f"{confidence*100:.1f}",
+            'top_predictions' : top_3_predictions,
+            'disposal_info' : disposal_info
+        })
+    
+    except Exception as e:
+        print(f"ERROR in frame prediction: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success' : False,
+            'error' : str(e),
+        }), 500
+
+@app.route('/live')
+def live():
+    return render_template('live.html')
 
 if __name__ == '__main__':
     print("\n" + "="*60)

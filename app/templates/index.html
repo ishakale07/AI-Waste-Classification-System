@@ -40,6 +40,26 @@
             opacity: 0.9;
         }
 
+        .nav-links {
+            margin: 20px 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            margin: 0 5px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
         .main-card {
             background: white;
             border-radius: 20px;
@@ -314,6 +334,9 @@
         <header>
             <h1>♻️ AI Waste Classifier</h1>
             <p class="tagline">Smart waste segregation powered by artificial intelligence</p>
+            <div class="nav-links">
+                <a href="/live">📹 Live Camera</a>
+            </div>
         </header>
 
         <div class="main-card">
