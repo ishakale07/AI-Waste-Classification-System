@@ -192,7 +192,7 @@
         .predicted-category {
             text-align: center;
             font-size: 2.5em;
-            color: #667eea;
+            color: #abc4ff;
             font-weight: bold;
             margin: 20px 0;
             animation: fadeIn 0.5s ease;
@@ -206,7 +206,7 @@
         .confidence-badge {
             display: inline-block;
             padding: 10px 25px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #b6ccfe, #abc4ff);
             color: white;
             border-radius: 25px;
             font-size: 1.2em;
@@ -235,7 +235,7 @@
 
         .bar-fill {
             height: 100%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #b6ccfe, #abc4ff);
             border-radius: 10px;
             transition: width 0.5s ease;
             display: flex;
@@ -252,7 +252,7 @@
             padding: 20px;
             border-radius: 15px;
             margin: 20px 0;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #b6ccfe;
         }
 
         .disposal-info h3 {
@@ -308,7 +308,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #abc4ff;
             cursor: pointer;
         }
 
@@ -316,7 +316,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #667eea;
+            background: #abc4ff;
             cursor: pointer;
             border: none;
         }
@@ -551,7 +551,15 @@
             }, intervalMs);
         }
 
+
+        let skipFrames = 2; // Process every 3rd frame
+        let frameCounter = 0;
+
         async function captureAndPredict() {
+            frameCounter++;
+            if (frameCounter % skipFrames !== 0) {
+                return; // Skip this frame
+            }
             if (!isRunning || video.readyState !== video.HAVE_ENOUGH_DATA) {
                 return;
             }
@@ -585,7 +593,16 @@
         function displayPrediction(result) {
             noPrediction.style.display = 'none';
             predictionDisplay.classList.add('active');
-
+            const colors = {
+            'plastic': '#FF6B6B',
+            'metal': '#4ECDC4',
+            'organic': '#95E1D3',
+            'paper': '#F38181',
+            'glass': '#A8E6CF',
+            'cardboard': '#FFD93D'
+            };
+    
+            video.style.border = `5px solid ${colors[result.predicted_class] || '#667eea'}`;
             document.getElementById('predictedCategory').textContent = 
                 result.predicted_class.toUpperCase();
             document.getElementById('confidenceBadge').textContent = 
