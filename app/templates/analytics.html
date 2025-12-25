@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - AI Waste Classifier</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .nav-links {
+            margin-top: 20px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 25px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .stat-highlight {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .recent-list {
+            list-style: none;
+        }
+
+        .recent-item {
+            padding: 15px;
+            background: #f8f9ff;
+            margin: 10px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .recent-category {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .recent-confidence {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .recent-time {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        #categoryChart, #pieChart {
+            width: 100%;
+            height: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Analytics Dashboard</h1>
+            <div class="nav-links">
+                <a href="/">← Back to Classifier</a>
+            </div>
+        </header>
+
+        <div class="card" style="margin-bottom: 30px;">
+            <h2>Overview Statistics</h2>
+            <div class="stat-highlight">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">Total Classifications</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avgConfidence">0%</div>
+                    <div class="stat-label">Avg Confidence</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="topCategory">-</div>
+                    <div class="stat-label">Most Common</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2>Category Distribution</h2>
+                <div id="categoryChart"></div>
+            </div>
+
+            <div class="card">
+                <h2>Waste Composition</h2>
+                <div id="pieChart"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Recent Classifications</h2>
+            <ul class="recent-list" id="recentList">
+                <li style="text-align: center; color: #999; padding: 40px;">
+                    No classifications yet
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/stats');
+                const stats = await response.json();
+
+                // Update overview stats
+                document.getElementById('totalCount').textContent = stats.total_predictions;
+
+                // Calculate average confidence
+                if (stats.recent_predictions.length > 0) {
+                    const avgConf = stats.recent_predictions.reduce((sum, pred) => 
+                        sum + pred.confidence, 0) / stats.recent_predictions.length;
+                    document.getElementById('avgConfidence').textContent = 
+                        (avgConf * 100).toFixed(1) + '%';
+                }
+
+                // Find top category
+                const topCat = Object.entries(stats.category_counts)
+                    .reduce((a, b) => b[1] > a[1] ? b : a, ['None', 0]);
+                document.getElementById('topCategory').textContent = 
+                    topCat[0].charAt(0).toUpperCase() + topCat[0].slice(1);
+
+                // Create bar chart
+                const categories = Object.keys(stats.category_counts);
+                const counts = Object.values(stats.category_counts);
+
+                const barData = [{
+                    x: categories,
+                    y: counts,
+                    type: 'bar',
+                    marker: {
+                        color: ['#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#A8E6CF', '#FFD93D']
+                    }
+                }];
+
+                const barLayout = {
+                    title: '',
+                    xaxis: { title: 'Category' },
+                    yaxis: { title: 'Count' },
+                    plot_bgcolor: '#f8f9ff',
+                    paper_bgcolor: 'white'
+                };
+
+                Plotly.newPlot('categoryChart', barData, barLayout, {responsive: true});
+
+                // Create pie chart
+                const pieData = [{
+                    values: counts,
+                    labels: categories,
+                    type: 'pie',
+                    marker: {
+                        colors: ['#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#A8E6CF', '#FFD93D']
+                    },
+                    textinfo: 'label+percent',
+                    textposition: 'outside'
+                }];
+
+                const pieLayout = {
+                    title: '',
+                    plot_bgcolor: '#f8f9ff',
+                    paper_bgcolor: 'white'
+                };
+
+                Plotly.newPlot('pieChart', pieData, pieLayout, {responsive: true});
+
+                // Display recent classifications
+                if (stats.recent_predictions.length > 0) {
+                    const recentList = document.getElementById('recentList');
+                    recentList.innerHTML = '';
+
+                    stats.recent_predictions.forEach(pred => {
+                        const li = document.createElement('li');
+                        li.className = 'recent-item';
+                        li.innerHTML = `
+                            <div>
+                                <div class="recent-category">${pred.category.toUpperCase()}</div>
+                                <div class="recent-time">${pred.timestamp}</div>
+                            </div>
+                            <div class="recent-confidence">
+                                ${(pred.confidence * 100).toFixed(1)}%
+                            </div>
+                        `;
+                        recentList.appendChild(li);
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Load data on page load
+        loadAnalytics();
+
+        // Refresh every 10 seconds
+        setInterval(loadAnalytics, 10000);
+    </script>
+</body>
+</html>
