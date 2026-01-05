@@ -4,12 +4,15 @@ A web-based application that uses deep learning to automatically classify waste 
 
 ## Features
 
-- **Real-time Classification**: Upload images and get instant predictions
-- **High Accuracy**: 85-95% classification accuracy using transfer learning
+- **Real-time Camera Classification**: Point your camera at waste items for instant live classification
+- **Image Upload Classification**: Upload images and get instant predictions
+- **High Accuracy**: 85-95% classification accuracy using transfer learning (MobileNetV2)
 - **Confidence Scores**: See detailed prediction probabilities for all categories
 - **Disposal Guidelines**: Get specific instructions for proper waste disposal
 - **Analytics Dashboard**: Track classification statistics and trends
-- **User-Friendly Interface**: Modern, responsive web design
+- **Adjustable Settings**: Configure confidence threshold and prediction intervals for live mode
+- **User-Friendly Interface**: Modern, responsive web design with mobile support
+- **Multi-Mode Operation**: Switch between upload mode and live camera mode
 
 ## Technology Stack
 
@@ -18,6 +21,7 @@ A web-based application that uses deep learning to automatically classify waste 
 - **Frontend**: HTML, CSS, JavaScript
 - **Visualization**: Plotly.js
 - **Image Processing**: OpenCV, PIL
+- **Real-time Processing**: WebRTC for camera access, Canvas API for frame capture
 
 ## Installation
 
@@ -39,7 +43,7 @@ pip install -r requirements.txt
 ```
 
 4. Download the trained model:
-   - Place `best_model.h5` in `data/models/`
+   - Place `best_model_finetuned.h5` in `data/models/`
    - Place `class_labels.json` in `data/models/`
 
 ## Usage
@@ -54,7 +58,29 @@ python app/app.py
 http://localhost:5000
 ```
 
-3. Upload an image of waste item and get classification results
+### Upload Mode
+
+1. Navigate to the home page
+2. Click or drag-and-drop an image of a waste item
+3. View classification results with confidence scores
+4. See disposal instructions
+
+### Live Camera Mode
+
+1. Click "📹 Live Camera" in the navigation
+2. Click "Start Camera" and grant camera permissions
+3. Point your camera at waste items
+4. See real-time classifications appear automatically
+5. Adjust settings:
+   - **Confidence Threshold**: Filter predictions below a certain confidence
+   - **Prediction Interval**: Control how often frames are analyzed (100ms - 2000ms)
+
+### Analytics Dashboard
+
+1. Navigate to `/analytics`
+2. View classification statistics
+3. See distribution charts and recent predictions
+
 
 ## Training Your Own Model
 
@@ -86,34 +112,46 @@ python src/evaluate.py
 - **Training Accuracy**: 88%
 - **Validation Accuracy**: 85%
 - **Test Accuracy**: 83%
-- **Inference Time**: <100ms per image
+- **Inference Time**: 
+  - Upload mode: <100ms per image
+  - Live mode: 200-500ms per frame (2-5 FPS)
+- **Categories**: Plastic, Metal, Organic, Paper, Glass, Cardboard, Textile, Vegetation, Miscellaneous
 
 ## Project Structure
 ```
 waste-classification/
 ├── data/
-│   ├── processed/       # Organized dataset
+│   ├── processed/       # Organized dataset (train/val/test)
 │   └── models/          # Trained models
 ├── app/
-│   ├── app.py          # Flask application
+│   ├── app.py          # Flask application with prediction endpoints
 │   ├── templates/       # HTML templates
+│   │   ├── index.html  # Upload mode interface
+│   │   ├── live.html   # Live camera interface
+│   │   └── analytics.html  # Statistics dashboard
 │   └── static/          # CSS, JS, uploads
 ├── src/
 │   ├── train.py        # Model training
 │   ├── evaluate.py     # Model evaluation
-│   └── utils.py        # Utility functions
+│   └── predict.py      # Single image prediction
+├── notebooks/
+│   └── 01_data_exploration.ipynb
 ├── requirements.txt
 └── README.md
 ```
 
 ## Future Enhancements
 
-- Mobile app development
-- Real-time video classification
-- Multi-language support
-- Integration with IoT devices
-- Deployment to cloud platforms
-- Database integration for persistent storage
+-  Multi-language support
+-  Voice announcements for classifications
+-  Batch processing for multiple items
+-  Object detection for multiple items in frame
+-  Offline mode with cached model
+-  Mobile app (React Native/Flutter)
+-  Hardware integration (Arduino/Raspberry Pi)
+-  Community feedback system
+-  Gamification and achievements
+-  Integration with recycling centers
 
 ## Contributing
 
