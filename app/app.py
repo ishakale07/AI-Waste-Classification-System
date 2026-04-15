@@ -43,8 +43,20 @@ else:
 # Statistics storage
 stats = {
     'total_predictions': 0,
+    'upload_predictions': 0,
+    'live_predictions': 0,
     'category_counts': {label: 0 for label in class_labels},
-    'recent_predictions': []
+    'upload_category_counts': {label: 0 for label in class_labels},
+    'live_category_counts': {label: 0 for label in class_labels},
+    'recent_predictions': [],
+    'upload_recent': [],
+    'live_recent': [],
+    'hourly_stats': {},
+    'confidence_stats': {
+        'high': 0,    # >80%
+        'medium': 0,  # 50-80%
+        'low': 0      # <50%
+    }
 }
 
 def preprocess_image(image, target_size=(224, 224)):
@@ -171,47 +183,87 @@ def get_disposal_info(category):
         'examples': 'General waste items'
     })
 
+def update_statistics(predicted_class, confidence, mode='upload'):
+    """
+    Update statistics for predictions
+    mode: 'upload' or 'live'
+    """
+    # Overall stats
+    stats['total_predictions'] += 1
+    stats['category_counts'][predicted_class] += 1
+    
+    # Mode-specific stats
+    if mode == 'upload':
+        stats['upload_predictions'] += 1
+        stats['upload_category_counts'][predicted_class] += 1
+    else:  # live
+        stats['live_predictions'] += 1
+        stats['live_category_counts'][predicted_class] += 1
+    
+    # Confidence stats
+    if confidence > 0.8:
+        stats['confidence_stats']['high'] += 1
+    elif confidence > 0.5:
+        stats['confidence_stats']['medium'] += 1
+    else:
+        stats['confidence_stats']['low'] += 1
+    
+    # Recent predictions
+    prediction_entry = {
+        'category': predicted_class,
+        'confidence': confidence,
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'mode': mode
+    }
+    
+    stats['recent_predictions'].insert(0, prediction_entry)
+    stats['recent_predictions'] = stats['recent_predictions'][:20]
+    
+    if mode == 'upload':
+        stats['upload_recent'].insert(0, prediction_entry)
+        stats['upload_recent'] = stats['upload_recent'][:10]
+    else:
+        stats['live_recent'].insert(0, prediction_entry)
+        stats['live_recent'] = stats['live_recent'][:10]
+    
+    # Hourly stats
+    hour_key = datetime.now().strftime('%Y-%m-%d %H:00')
+    if hour_key not in stats['hourly_stats']:
+        stats['hourly_stats'][hour_key] = 0
+    stats['hourly_stats'][hour_key] += 1
+    
+    # Keep only last 24 hours
+    if len(stats['hourly_stats']) > 24:
+        oldest_key = min(stats['hourly_stats'].keys())
+        del stats['hourly_stats'][oldest_key]
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Check if model is loaded
     if model is None:
-        return jsonify({
-            'success': False,
-            'error': 'Model not loaded. Please train the model first.'
-        }), 500
+        return jsonify({'success': False, 'error': 'Model not loaded'}), 500
     
-    # Check if file is in request
     if 'file' not in request.files:
-        return jsonify({
-            'success': False,
-            'error': 'No file uploaded'
-        }), 400
+        return jsonify({'success': False, 'error': 'No file uploaded'}), 400
     
     file = request.files['file']
     
     if file.filename == '':
-        return jsonify({
-            'success': False,
-            'error': 'No file selected'
-        }), 400
+        return jsonify({'success': False, 'error': 'No file selected'}), 400
     
     try:
-        # Read and preprocess image
         image_bytes = file.read()
         image = Image.open(io.BytesIO(image_bytes))
         processed_image = preprocess_image(image)
         
-        # Make prediction
         predictions = model.predict(processed_image, verbose=0)[0]
         predicted_class_idx = np.argmax(predictions)
         predicted_class = class_labels[predicted_class_idx]
         confidence = float(predictions[predicted_class_idx])
         
-        # Get all predictions
         all_predictions = [
             {
                 'category': class_labels[i],
@@ -222,20 +274,11 @@ def predict():
         ]
         all_predictions.sort(key=lambda x: x['confidence'], reverse=True)
         
-        # Get disposal information
         disposal_info = get_disposal_info(predicted_class)
         
-        # Update statistics
-        stats['total_predictions'] += 1
-        stats['category_counts'][predicted_class] += 1
-        stats['recent_predictions'].insert(0, {
-            'category': predicted_class,
-            'confidence': confidence,
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        })
-        stats['recent_predictions'] = stats['recent_predictions'][:10]
+        # UPDATE: Use the new update_statistics function
+        update_statistics(predicted_class, confidence, mode='upload')
         
-        # Save uploaded image
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"{predicted_class}_{timestamp}.jpg"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -255,10 +298,7 @@ def predict():
         print(f"ERROR in prediction: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/stats')
 def get_stats():
@@ -274,59 +314,54 @@ def uploaded_file(filename):
 
 @app.route('/predict_frame', methods=['POST'])
 def predict_frame():
+    """Predict from base64 encoded frame"""
     if model is None:
-        return jsonify({
-            'success' : 'False',
-            'error' : 'Model not loaded'
-        }), 500
+        return jsonify({'success': False, 'error': 'Model not loaded'}), 500
     
     try:
         data = request.get_json()
-
+        
         if not data or 'image' not in data:
-            return jsonify({
-                'success' : 'False',
-                'error' : 'No image data provided'
-            }), 400
+            return jsonify({'success': False, 'error': 'No image data provided'}), 400
         
         image_data = data['image'].split(',')[1]
         image_bytes = base64.b64decode(image_data)
         image = Image.open(io.BytesIO(image_bytes))
-
+        
         processed_image = preprocess_image(image)
-        predictions = model.predict(processed_image, verbose = 0)[0]
-        predicted_class_idx= np.argmax(predictions)
+        predictions = model.predict(processed_image, verbose=0)[0]
+        predicted_class_idx = np.argmax(predictions)
         predicted_class = class_labels[predicted_class_idx]
         confidence = float(predictions[predicted_class_idx])
-
+        
         top_3_predictions = [
             {
-                'category' : class_labels[i],
-                'confidence' : float(predictions[i]),
-                'percentage' : f"{float(predictions[i])*100:.1f}"
+                'category': class_labels[i],
+                'confidence': float(predictions[i]),
+                'percentage': f"{float(predictions[i])*100:.1f}"
             }
             for i in np.argsort(predictions)[-3:][::-1]
         ]
-
+        
         disposal_info = get_disposal_info(predicted_class)
-
+        
+        # UPDATE: Use the new update_statistics function
+        update_statistics(predicted_class, confidence, mode='live')
+        
         return jsonify({
-            'success' : True,
-            'predicted_class' : predicted_class,
-            'confidence' : confidence,
-            'confidence_percentage' : f"{confidence*100:.1f}",
-            'top_predictions' : top_3_predictions,
-            'disposal_info' : disposal_info
+            'success': True,
+            'predicted_class': predicted_class,
+            'confidence': confidence,
+            'confidence_percentage': f"{confidence*100:.1f}",
+            'top_predictions': top_3_predictions,
+            'disposal_info': disposal_info
         })
-    
+        
     except Exception as e:
         print(f"ERROR in frame prediction: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({
-            'success' : False,
-            'error' : str(e),
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/live')
 def live():
