@@ -3,10 +3,21 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Virtual environments
 venv/
 .venv/
+
+# Local browser/test profiles
+.chrome-headless-profile/
+.chrome-test-profile/
+
+# Editor settings
+.vscode/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -19,6 +30,13 @@ venv/
 # Data (optional - recommended)
 data/raw/
 data/processed/
+
+# Generated reports
+reports/test_report.html
+
+# App uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
 
 # OS
 .DS_Store
