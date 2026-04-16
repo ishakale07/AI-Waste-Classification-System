@@ -194,23 +194,27 @@ def get_disposal_info(category):
         'examples': 'General waste items'
     })
 
-def update_statistics(category, confidence, mode='upload'):
-    """Update statistics tracking"""
+def update_statistics(predicted_class, confidence, mode='upload'):
+    """
+    Update statistics for predictions
+    mode: 'upload' or 'live'
+    """
+    # Overall stats
     stats['total_predictions'] += 1
+    stats['category_counts'][predicted_class] += 1
     
+    # Mode-specific stats
     if mode == 'upload':
         stats['upload_predictions'] += 1
-    elif mode == 'live':
+        stats['upload_category_counts'][predicted_class] += 1
+    else:  # live
         stats['live_predictions'] += 1
+        stats['live_category_counts'][predicted_class] += 1
     
-    # Track by category
-    if category in stats['categories']:
-        stats['categories'][category] += 1
-    
-    # Track confidence levels
-    if confidence >= 0.8:
+    # Confidence stats
+    if confidence > 0.8:
         stats['confidence_stats']['high'] += 1
-    elif confidence >= 0.6:
+    elif confidence > 0.5:
         stats['confidence_stats']['medium'] += 1
     else:
         stats['confidence_stats']['low'] += 1
