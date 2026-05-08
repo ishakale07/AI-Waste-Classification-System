@@ -34,7 +34,6 @@
             line-height: 1.6;
         }
 
-
         /* Navigation */
         nav {
             background: white;
@@ -47,7 +46,7 @@
         }
 
         .nav-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 2rem;
             display: flex;
@@ -89,15 +88,17 @@
             color: var(--primary);
         }
 
+        /* Main Container */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 3rem 2rem;
         }
 
-        header {
+        /* Header */
+        .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 3rem;
         }
 
         .header h1 {
@@ -112,31 +113,58 @@
             color: var(--gray-600);
         }
 
-        
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+        /* Alert */
+        .alert {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            display: none;
         }
 
+        .alert.show {
+            display: block;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Card */
         .card {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 1rem;
+            border: 1px solid var(--gray-200);
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        .camera-container {
-            position: relative
+        /* Camera Section */
+        .camera-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            aspect-ratio: 16/9;
         }
 
         #video {
             width: 100%;
-            border-radius: 15px;
-            background: #000;
+            height: 100%;
             display: block;
+            object-fit: cover;
         }
 
         #canvas {
@@ -145,51 +173,81 @@
 
         .camera-overlay {
             position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.8);
             color: white;
-            font-size: 1.2em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            gap: 1rem;
         }
 
+        .camera-overlay-icon {
+            font-size: 3rem;
+            opacity: 0.8;
+        }
+
+        .fps-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* Controls */
         .controls {
-            margin-top: 20px;
             display: flex;
-            gap: 15px;
-            justify-content: center;
+            gap: 1rem;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 15px 30px;
+            display: inline-flex;
+            margin-top: 1.75rem;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 25px;
-            font-size: 1em;
+            border-radius: 0.5rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            text-decoration: none;
+            flex: 1;
+            justify-content: center;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #a3f998, #84eaa4);
+            background: var(--success);
             color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .btn-danger {
-            background: #e74c3c;
+            background: var(--danger);
             color: white;
         }
 
         .btn-danger:hover:not(:disabled) {
-            background: #c0392b;
-            transform: translateY(-2px);
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
         .btn:disabled {
@@ -197,22 +255,16 @@
             cursor: not-allowed;
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
             border-radius: 50%;
-            margin-right: 8px;
+            background: var(--gray-400);
+        }
+
+        .status-dot.active {
+            background: var(--success);
             animation: pulse 2s infinite;
-        }
-
-        .status-indicator.active {
-            background: #2ecc71;
-        }
-
-        .status-indicator.inactive {
-            background: #95a5a6;
-            animation: none;
         }
 
         @keyframes pulse {
@@ -220,195 +272,277 @@
             50% { opacity: 0.5; }
         }
 
-        .result-panel {
-            min-height: 400px;
+        /* Settings */
+        .settings-card {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
         }
 
-        .result-panel h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .no-prediction {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .no-prediction-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-        }
-
-        .prediction-display {
-            display: none;
-        }
-
-        .prediction-display.active {
-            display: block;
-        }
-
-        .predicted-category {
-            text-align: center;
-            font-size: 2.5em;
-            color: #abc4ff;
-            font-weight: bold;
-            margin: 20px 0;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .confidence-badge {
-            display: inline-block;
-            padding: 10px 25px;
-            background: linear-gradient(135deg, #b6ccfe, #abc4ff);
-            color: white;
-            border-radius: 25px;
-            font-size: 1.2em;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .confidence-bar {
-            margin: 20px 0;
-        }
-
-        .confidence-bar-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .bar-container {
-            background: #e0e0e0;
-            border-radius: 10px;
-            height: 25px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #b6ccfe, #abc4ff);
-            border-radius: 10px;
-            transition: width 0.5s ease;
+        .settings-header {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            padding-right: 10px;
-            color: white;
+            gap: 0.5rem;
+        }
+
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .setting-name {
             font-weight: 600;
-            font-size: 0.9em;
+            color: var(--gray-700);
+            font-size: 0.95rem;
         }
 
-        .disposal-info {
-            background: #f8f9ff;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
-            border-left: 5px solid #b6ccfe;
-        }
-
-        .disposal-info h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .disposal-info p {
-            color: #555;
-            margin: 5px 0;
-        }
-
-        .settings-panel {
-            background: #f8f9ff;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-        }
-
-        .settings-panel h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .setting-item {
-            margin: 15px 0;
-        }
-
-        .setting-item label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 600;
+        .setting-value {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
         }
 
         .slider {
             width: 100%;
-            height: 6px;
-            border-radius: 5px;
-            background: #d3d3d3;
+            height: 0.5rem;
+            border-radius: 1rem;
+            background: var(--gray-200);
             outline: none;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .slider:hover {
-            opacity: 1;
+            appearance: none;
         }
 
         .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 1.25rem;
+            height: 1.25rem;
             border-radius: 50%;
-            background: #abc4ff;
+            background: var(--primary);
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
         }
 
         .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 1.25rem;
+            height: 1.25rem;
             border-radius: 50%;
-            background: #abc4ff;
+            background: var(--primary);
             cursor: pointer;
             border: none;
         }
 
-        .fps-display {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
+        .setting-hint {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            margin-top: 0.5rem;
         }
 
-        .error-message {
-            background: #fee;
-            color: #c00;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 4px solid #c00;
+        /* Results Panel */
+        .results-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .results-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray-600);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .results-content {
             display: none;
         }
 
-        .error-message.show {
-            display: block;
+        .results-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
-        @media (max-width: 968px) {
-            .main-content {
+        /* Prediction Result */
+        .prediction-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+
+        .prediction-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .prediction-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .confidence-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+        }
+
+        /* Top Predictions */
+        .predictions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .predictions-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .prediction-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .prediction-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prediction-name {
+            font-weight: 600;
+            color: var(--gray-700);
+            text-transform: capitalize;
+        }
+
+        .prediction-percent {
+            font-weight: 700;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 0.5rem;
+            background: var(--gray-200);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 1rem;
+            transition: width 0.4s ease;
+        }
+
+        /* Disposal Info */
+        .disposal-section {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+
+        .disposal-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .disposal-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .disposal-row {
+            display: flex;
+            padding: 0.75rem 0;
+            gap: 1rem;
+        }
+
+        .disposal-label {
+            font-weight: 600;
+            color: var(--gray-700);
+            min-width: 80px;
+        }
+
+        .disposal-value {
+            color: var(--gray-600);
+            flex: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-grid {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.875rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
             }
         }
     </style>
@@ -422,89 +556,127 @@
                 <span>Waste Classifier</span>
             </a>
             <div class="nav-links">
-                <a href="/" class="nav-link"><i class="fa-solid fa-arrow-up-from-bracket"></i> Upload Mode</a>
+                <a href="/" class="nav-link"><i class="fa-solid fa-arrow-up-from-bracket"></i> Upload</a>
                 <a href="/analytics" class="nav-link"><i class="fa-solid fa-chart-simple"></i> Analytics</a>
             </div>
         </div>
     </nav>
+
+    <!-- Main Content -->
     <div class="container">
-        <header>
-            <h1> Live Camera Classification</h1>
-            <p>Real-time waste classification using your camera</p>
-            
-        </header>
+        <!-- Header -->
+        <div class="header">
+            <h1>Live Camera Classification</h1>
+            <p>Real-time waste identification using your device camera</p>
+        </div>
 
-        <div class="error-message" id="errorMessage"></div>
+        <!-- Error Alert -->
+        <div class="alert" id="errorMessage"></div>
 
-        <div class="main-content">
-            <div class="card camera-container">
-                <video id="video" autoplay playsinline></video>
-                <canvas id="canvas"></canvas>
-                <div class="camera-overlay" id="cameraOverlay">
-                    <div><i class="fa-solid fa-camera"></i></div>
-                    <div>Click "Start Camera" to begin</div>
-                </div>
-                <div class="fps-display" id="fpsDisplay" style="display: none;">
-                    FPS: <span id="fpsValue">0</span>
-                </div>
-                
-                <div class="controls">
-                    <button class="btn btn-primary" id="startBtn">
-                        <span class="status-indicator inactive" id="statusIndicator"></span>
-                        Start Camera
-                    </button>
-                    <button class="btn btn-danger" id="stopBtn" disabled>
-                        Stop Camera
-                    </button>
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Camera Section -->
+            <div class="camera-section">
+                <div class="card">
+                    <div class="video-container">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas"></canvas>
+                        
+                        <div class="camera-overlay" id="cameraOverlay">
+                            <div class="camera-overlay-icon"><i class="fa-solid fa-video"></i></div>
+                            <div>Click "Start Camera" to begin</div>
+                        </div>
+
+                        <div class="fps-badge" id="fpsDisplay">
+                            FPS: <span id="fpsValue">0</span>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <button class="btn btn-primary" id="startBtn">
+                            <span class="status-dot" id="statusDot"></span>
+                            Start Camera
+                        </button>
+                        <button class="btn btn-danger" id="stopBtn" disabled>
+                            Stop Camera
+                        </button>
+                    </div>
                 </div>
 
-                <div class="settings-panel">
-                    <h3><i class="fa-solid fa-gear"></i> Settings</h3>
-                    <div class="setting-item">
-                        <label for="confidenceThreshold">
-                            Confidence Threshold: <span id="confidenceValue">50</span>%
-                        </label>
+                <!-- Settings -->
+                <div class="settings-card">
+                    <div class="settings-header">
+                        <span><i class="fa-solid fa-gear"></i></span>
+                        <span>Camera Settings</span>
+                    </div>
+
+                    <div class="setting-group">
+                        <div class="setting-label">
+                            <span class="setting-name">Confidence Threshold</span>
+                            <span class="setting-value"><span id="confidenceValue">50</span>%</span>
+                        </div>
                         <input type="range" min="0" max="100" value="50" 
                                class="slider" id="confidenceThreshold">
-                        <small style="color: #777;">Only show predictions above this confidence</small>
+                        <div class="setting-hint">Only show predictions above this confidence level</div>
                     </div>
-                    <div class="setting-item">
-                        <label for="predictionInterval">
-                            Prediction Interval: <span id="intervalValue">500</span>ms
-                        </label>
+
+                    <div class="setting-group">
+                        <div class="setting-label">
+                            <span class="setting-name">Prediction Speed</span>
+                            <span class="setting-value"><span id="intervalValue">500</span>ms</span>
+                        </div>
                         <input type="range" min="100" max="2000" value="500" step="100"
                                class="slider" id="predictionInterval">
-                        <small style="color: #777;">How often to analyze frames</small>
+                        <div class="setting-hint">How often to analyze camera frames</div>
                     </div>
                 </div>
             </div>
 
-            <div class="card result-panel">
-                <h2>Classification Results</h2>
-                
-                <div class="no-prediction" id="noPrediction">
-                    <div class="no-prediction-icon"><i class="fa-solid fa-chart-column"></i></i></div>
+            <!-- Results Panel -->
+            <div class="card results-card">
+                <h2 class="results-header">Classification Results</h2>
+
+                <!-- No Results State -->
+                <div class="no-results" id="noResults">
+                    <div class="no-results-icon"><i class="fa-solid fa-chart-column"></i></div>
                     <p>Start the camera and point it at a waste item</p>
-                    <p style="margin-top: 10px; font-size: 0.9em;">
-                        Results will appear here in real-time
-                    </p>
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">Results will appear here in real-time</p>
                 </div>
 
-                <div class="prediction-display" id="predictionDisplay">
-                    <div style="text-align: center;">
-                        <div class="predicted-category" id="predictedCategory">-</div>
-                        <div class="confidence-badge" id="confidenceBadge">-</div>
+                <!-- Results Content -->
+                <div class="results-content" id="resultsContent">
+                    <!-- Prediction Banner -->
+                    <div class="prediction-banner">
+                        <div class="prediction-label">Detected</div>
+                        <div class="prediction-value" id="predictedCategory">-</div>
+                        <div class="confidence-badge">
+                            <span>✓</span>
+                            <span id="confidenceBadge">-</span>
+                        </div>
                     </div>
 
-                    <div style="margin-top: 30px;">
-                        <h3 style="color: #333; margin-bottom: 15px;">Top Predictions</h3>
+                    <!-- Top Predictions -->
+                    <div class="predictions-list">
+                        <div class="predictions-title">Confidence Levels</div>
                         <div id="topPredictions"></div>
                     </div>
 
-                    <div class="disposal-info" id="disposalInfo">
-                        <h3>🗑️ Disposal Instructions</h3>
-                        <p><strong>Bin Type:</strong> <span id="binType">-</span></p>
-                        <p style="margin-top: 10px;"><strong>Examples:</strong> <span id="examples">-</span></p>
+                    <!-- Disposal Info -->
+                    <div class="disposal-section">
+                        <div class="disposal-header">
+                            <span style="font-size: 1.25rem;">🗑️</span>
+                            <h3>Disposal Guidelines</h3>
+                        </div>
+                        
+                        <div class="disposal-row">
+                            <div class="disposal-label">Bin Type:</div>
+                            <div class="disposal-value" id="binType">-</div>
+                        </div>
+                        
+                        <div class="disposal-row">
+                            <div class="disposal-label">Examples:</div>
+                            <div class="disposal-value" id="examples">-</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -518,10 +690,10 @@
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const cameraOverlay = document.getElementById('cameraOverlay');
-        const statusIndicator = document.getElementById('statusIndicator');
+        const statusDot = document.getElementById('statusDot');
         const errorMessage = document.getElementById('errorMessage');
-        const noPrediction = document.getElementById('noPrediction');
-        const predictionDisplay = document.getElementById('predictionDisplay');
+        const noResults = document.getElementById('noResults');
+        const resultsContent = document.getElementById('resultsContent');
         const fpsDisplay = document.getElementById('fpsDisplay');
         const fpsValue = document.getElementById('fpsValue');
 
@@ -533,7 +705,7 @@
         let confidenceThreshold = 0.5;
         let intervalMs = 500;
 
-        // Settings listeners
+        // Settings
         document.getElementById('confidenceThreshold').addEventListener('input', (e) => {
             confidenceThreshold = e.target.value / 100;
             document.getElementById('confidenceValue').textContent = e.target.value;
@@ -543,7 +715,6 @@
             intervalMs = parseInt(e.target.value);
             document.getElementById('intervalValue').textContent = e.target.value;
             
-            // Restart prediction loop if running
             if (isRunning) {
                 clearInterval(predictionInterval);
                 startPredictionLoop();
@@ -557,21 +728,20 @@
                     video: { 
                         width: { ideal: 1280 },
                         height: { ideal: 720 },
-                        facingMode: 'environment' // Use back camera on mobile
+                        facingMode: 'environment'
                     } 
                 });
                 
                 video.srcObject = stream;
                 cameraOverlay.style.display = 'none';
-                statusIndicator.classList.remove('inactive');
-                statusIndicator.classList.add('active');
-                startBtn.textContent = ' Camera Active';
+                statusDot.classList.add('active');
+                startBtn.textContent = 'Camera Active';
+                startBtn.insertBefore(statusDot, startBtn.firstChild);
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 fpsDisplay.style.display = 'block';
                 isRunning = true;
 
-                // Wait for video to load
                 video.onloadedmetadata = () => {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
@@ -600,17 +770,17 @@
             }
             
             video.srcObject = null;
-            cameraOverlay.style.display = 'block';
-            statusIndicator.classList.remove('active');
-            statusIndicator.classList.add('inactive');
-            startBtn.textContent = ' Start Camera';
+            cameraOverlay.style.display = 'flex';
+            statusDot.classList.remove('active');
+            startBtn.textContent = 'Start Camera';
+            startBtn.insertBefore(statusDot, startBtn.firstChild);
             startBtn.disabled = false;
             stopBtn.disabled = true;
             fpsDisplay.style.display = 'none';
             isRunning = false;
             
-            noPrediction.style.display = 'block';
-            predictionDisplay.classList.remove('active');
+            noResults.style.display = 'block';
+            resultsContent.classList.remove('active');
         }
 
         function startPredictionLoop() {
@@ -620,23 +790,12 @@
             }, intervalMs);
         }
 
-
-        let skipFrames = 2; // Process every 3rd frame
-        let frameCounter = 0;
-
         async function captureAndPredict() {
-            frameCounter++;
-            if (frameCounter % skipFrames !== 0) {
-                return; // Skip this frame
-            }
             if (!isRunning || video.readyState !== video.HAVE_ENOUGH_DATA) {
                 return;
             }
 
-            // Draw video frame to canvas
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Convert to base64
             const imageData = canvas.toDataURL('image/jpeg', 0.8);
 
             try {
@@ -660,42 +819,31 @@
         }
 
         function displayPrediction(result) {
-            noPrediction.style.display = 'none';
-            predictionDisplay.classList.add('active');
-            const colors = {
-            'plastic': '#FF6B6B',
-            'metal': '#4ECDC4',
-            'organic': '#95E1D3',
-            'paper': '#F38181',
-            'glass': '#A8E6CF',
-            'cardboard': '#FFD93D'
-            };
-    
-            video.style.border = `5px solid ${colors[result.predicted_class] || '#667eea'}`;
+            noResults.style.display = 'none';
+            resultsContent.classList.add('active');
+
             document.getElementById('predictedCategory').textContent = 
                 result.predicted_class.toUpperCase();
             document.getElementById('confidenceBadge').textContent = 
-                result.confidence_percentage + '% Confident';
+                result.confidence_percentage + '% Confidence';
 
             // Top predictions
             const topPredDiv = document.getElementById('topPredictions');
             topPredDiv.innerHTML = '';
             
             result.top_predictions.forEach(pred => {
-                const barDiv = document.createElement('div');
-                barDiv.className = 'confidence-bar';
-                barDiv.innerHTML = `
-                    <div class="confidence-bar-label">
-                        <span>${pred.category}</span>
-                        <span>${pred.percentage}%</span>
+                const item = document.createElement('div');
+                item.className = 'prediction-item';
+                item.innerHTML = `
+                    <div class="prediction-item-header">
+                        <span class="prediction-name">${pred.category}</span>
+                        <span class="prediction-percent">${pred.percentage}%</span>
                     </div>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="width: ${pred.percentage}%">
-                            ${pred.percentage}%
-                        </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${pred.percentage}%"></div>
                     </div>
                 `;
-                topPredDiv.appendChild(barDiv);
+                topPredDiv.appendChild(item);
             });
 
             // Disposal info
@@ -725,7 +873,6 @@
             errorMessage.classList.remove('show');
         }
 
-        // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             stopCamera();
         });
