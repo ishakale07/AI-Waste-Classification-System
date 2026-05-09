@@ -5,7 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics - AI Waste Classifier</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/0e5771e83a.js" crossorigin="anonymous"></script>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,183 +29,420 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #b6ccfe 0%, #abc4ff 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
         }
 
-        .container {
+        /* Navigation */
+        nav {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .nav-container {
             max-width: 1400px;
             margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .nav-links {
-            margin-top: 20px;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 25px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 25px;
-            margin: 0 10px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        .card h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .stat-highlight {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #abc4ff;
-        }
-
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
-            font-size: 0.9em;
-        }
-
-        .recent-list {
-            list-style: none;
-        }
-
-        .recent-item {
-            padding: 15px;
-            background: #f8f9ff;
-            margin: 10px 0;
-            border-radius: 10px;
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .recent-category {
-            font-weight: bold;
-            color: #667eea;
-            font-size: 1.1em;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            text-decoration: none;
         }
 
-        .recent-confidence {
-            background: linear-gradient(135deg, #b6ccfe, #abc4ff);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.9em;
+        .logo-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1rem;
+            color: var(--gray-700);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            background: var(--gray-100);
+            color: var(--primary);
+        }
+
+        .nav-link i {
+            font-size: 0.9rem;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.primary {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .stat-icon.success {
+            background: #f0fdf4;
+            color: var(--success);
+        }
+
+        .stat-icon.warning {
+            background: #fffbeb;
+            color: var(--warning);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            line-height: 1;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid var(--gray-200);
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .card-header i {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            width: 100%;
+            min-height: 400px;
+        }
+
+        /* Recent List */
+        .recent-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .recent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .recent-item:hover {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        .recent-item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .recent-category {
+            font-weight: 700;
+            color: var(--gray-900);
+            font-size: 1rem;
+            text-transform: capitalize;
         }
 
         .recent-time {
-            color: #999;
-            font-size: 0.85em;
+            font-size: 0.875rem;
+            color: var(--gray-600);
         }
 
-        #categoryChart, #pieChart {
-            width: 100%;
-            height: 400px;
+        .recent-confidence {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray-600);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 768px) {
-            .dashboard-grid {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.875rem;
+            }
+
+            .stats-overview {
                 grid-template-columns: 1fr;
             }
-            
-            h1 {
-                font-size: 2em;
+
+            .charts-grid {
+                grid-template-columns: 1fr;
             }
+
+            .nav-link span {
+                display: none;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-600);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📊 Analytics Dashboard</h1>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fa-solid fa-recycle logo-icon"></i>
+                <span>Waste Classifier</span>
+            </a>
             <div class="nav-links">
-                <a href="/">← Back to Classifier</a>
+                <a href="/" class="nav-link">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <span>Upload</span>
+                </a>
+                <a href="/live" class="nav-link">
+                    <i class="fa-solid fa-video"></i>
+                    <span>Live Camera</span>
+                </a>
             </div>
-        </header>
+        </div>
+    </nav>
 
-        <div class="card" style="margin-bottom: 30px;">
-            <h2>Overview Statistics</h2>
-            <div class="stat-highlight">
-                <div class="stat-item">
-                    <div class="stat-value" id="totalCount">0</div>
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Analytics Dashboard</h1>
+            <p>Track and analyze your waste classification data</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-header">
                     <div class="stat-label">Total Classifications</div>
+                    <div class="stat-icon primary">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="avgConfidence">0%</div>
+                <div class="stat-value" id="totalCount">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
                     <div class="stat-label">Avg Confidence</div>
+                    <div class="stat-icon success">
+                        <i class="fa-solid fa-check-circle"></i>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="topCategory">-</div>
+                <div class="stat-value" id="avgConfidence">0%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
                     <div class="stat-label">Most Common</div>
+                    <div class="stat-icon warning">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
                 </div>
+                <div class="stat-value" id="topCategory">-</div>
             </div>
         </div>
 
-        <div class="dashboard-grid">
+        <!-- Charts -->
+        <div class="charts-grid">
             <div class="card">
-                <h2>Category Distribution</h2>
-                <div id="categoryChart"></div>
+                <div class="card-header">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    <h2>Category Distribution</h2>
+                </div>
+                <div class="chart-container" id="categoryChart"></div>
             </div>
 
             <div class="card">
-                <h2>Waste Composition</h2>
-                <div id="pieChart"></div>
+                <div class="card-header">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <h2>Waste Composition</h2>
+                </div>
+                <div class="chart-container" id="pieChart"></div>
             </div>
         </div>
 
+        <!-- Recent Classifications -->
         <div class="card">
-            <h2>Recent Classifications</h2>
+            <div class="card-header">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <h2>Recent Classifications</h2>
+            </div>
             <ul class="recent-list" id="recentList">
-                <li style="text-align: center; color: #999; padding: 40px;">
-                    No classifications yet
+                <li class="empty-state">
+                    <i class="fa-solid fa-inbox"></i>
+                    <p>No classifications yet</p>
                 </li>
             </ul>
         </div>
@@ -210,80 +463,133 @@
                         sum + pred.confidence, 0) / stats.recent_predictions.length;
                     document.getElementById('avgConfidence').textContent = 
                         (avgConf * 100).toFixed(1) + '%';
+                } else {
+                    document.getElementById('avgConfidence').textContent = '0%';
                 }
 
                 // Find top category
                 const topCat = Object.entries(stats.category_counts)
                     .reduce((a, b) => b[1] > a[1] ? b : a, ['None', 0]);
-                document.getElementById('topCategory').textContent = 
-                    topCat[0].charAt(0).toUpperCase() + topCat[0].slice(1);
+                
+                if (topCat[1] > 0) {
+                    document.getElementById('topCategory').textContent = 
+                        topCat[0].charAt(0).toUpperCase() + topCat[0].slice(1);
+                } else {
+                    document.getElementById('topCategory').textContent = '-';
+                }
 
                 // Create bar chart
                 const categories = Object.keys(stats.category_counts);
                 const counts = Object.values(stats.category_counts);
 
                 const barData = [{
-                    x: categories,
+                    x: categories.map(cat => cat.charAt(0).toUpperCase() + cat.slice(1)),
                     y: counts,
                     type: 'bar',
                     marker: {
-                        color: ['#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#A8E6CF', '#FFD93D']
+                        color: '#2563eb',
+                        opacity: 0.8
                     }
                 }];
 
                 const barLayout = {
-                    title: '',
-                    xaxis: { title: 'Category' },
+                    xaxis: { 
+                        title: 'Category',
+                        tickangle: -45
+                    },
                     yaxis: { title: 'Count' },
-                    plot_bgcolor: '#f8f9ff',
-                    paper_bgcolor: 'white'
+                    plot_bgcolor: '#f9fafb',
+                    paper_bgcolor: 'white',
+                    margin: { t: 20, b: 80 },
+                    font: {
+                        family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+                        size: 12,
+                        color: '#374151'
+                    }
                 };
 
-                Plotly.newPlot('categoryChart', barData, barLayout, {responsive: true});
+                Plotly.newPlot('categoryChart', barData, barLayout, {
+                    responsive: true,
+                    displayModeBar: false
+                });
 
                 // Create pie chart
                 const pieData = [{
                     values: counts,
-                    labels: categories,
+                    labels: categories.map(cat => cat.charAt(0).toUpperCase() + cat.slice(1)),
                     type: 'pie',
                     marker: {
-                        colors: ['#FF6B6B', '#4ECDC4', '#95E1D3', '#F38181', '#A8E6CF', '#FFD93D']
+                        colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316']
                     },
                     textinfo: 'label+percent',
-                    textposition: 'outside'
+                    textposition: 'outside',
+                    hole: 0.3
                 }];
 
                 const pieLayout = {
-                    title: '',
-                    plot_bgcolor: '#f8f9ff',
-                    paper_bgcolor: 'white'
+                    plot_bgcolor: '#f9fafb',
+                    paper_bgcolor: 'white',
+                    margin: { t: 20, b: 20 },
+                    font: {
+                        family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+                        size: 12,
+                        color: '#374151'
+                    },
+                    showlegend: true,
+                    legend: {
+                        orientation: 'v',
+                        x: 1,
+                        y: 0.5
+                    }
                 };
 
-                Plotly.newPlot('pieChart', pieData, pieLayout, {responsive: true});
+                Plotly.newPlot('pieChart', pieData, pieLayout, {
+                    responsive: true,
+                    displayModeBar: false
+                });
 
                 // Display recent classifications
+                const recentList = document.getElementById('recentList');
+                
                 if (stats.recent_predictions.length > 0) {
-                    const recentList = document.getElementById('recentList');
                     recentList.innerHTML = '';
 
-                    stats.recent_predictions.forEach(pred => {
+                    stats.recent_predictions.slice(0, 10).forEach(pred => {
                         const li = document.createElement('li');
                         li.className = 'recent-item';
                         li.innerHTML = `
-                            <div>
-                                <div class="recent-category">${pred.category.toUpperCase()}</div>
-                                <div class="recent-time">${pred.timestamp}</div>
+                            <div class="recent-item-content">
+                                <div class="recent-category">${pred.category}</div>
+                                <div class="recent-time">
+                                    <i class="fa-regular fa-clock"></i> ${pred.timestamp}
+                                </div>
                             </div>
                             <div class="recent-confidence">
+                                <i class="fa-solid fa-check"></i>
                                 ${(pred.confidence * 100).toFixed(1)}%
                             </div>
                         `;
                         recentList.appendChild(li);
                     });
+                } else {
+                    recentList.innerHTML = `
+                        <li class="empty-state">
+                            <i class="fa-solid fa-inbox"></i>
+                            <p>No classifications yet. Start classifying waste items to see analytics.</p>
+                        </li>
+                    `;
                 }
 
             } catch (error) {
                 console.error('Error loading analytics:', error);
+                
+                // Show error state
+                document.getElementById('recentList').innerHTML = `
+                    <li class="empty-state">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <p>Error loading analytics. Please refresh the page.</p>
+                    </li>
+                `;
             }
         }
 
